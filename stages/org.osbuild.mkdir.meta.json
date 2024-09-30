@@ -31,8 +31,23 @@
             ],
             "properties": {
               "path": {
-                "type": "string",
-                "pattern": "^\\/?(?!\\.\\.)((?!\\/\\.\\.\\/).)+$"
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "description": "Target path, if a tree",
+                    "pattern": "^\\/?(?!\\.\\.)((?!\\/\\.\\.\\/).)+$"
+                  },
+                  {
+                    "type": "string",
+                    "description": "Target path, if a mount",
+                    "pattern": "^mount://[^/]+/"
+                  },
+                  {
+                    "type": "string",
+                    "description": "Target path, if a tree",
+                    "pattern": "^tree://[^/]+/"
+                  }
+                ]
               },
               "mode": {
                 "type": "number",

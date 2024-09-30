@@ -3,22 +3,29 @@ import os
 import sys
 
 import osbuild.api
+from osbuild.util import parsing
 from osbuild.util.path import in_tree
 
 
-def main(tree, options):
+def main(args, options):
+    tree = args["tree"]
+
     for item in options["paths"]:
         path = item["path"]
         mode = item.get("mode", 0o777)
         parents = item.get("parents", False)
         exist_ok = item.get("exist_ok", False)
 
-        if not path.startswith("/"):
-            print("WARNING: relative path used, this is discouraged!")
-
-        target = os.path.join(tree, path.lstrip("/"))
-        if not in_tree(target, tree):
-            raise ValueError(f"path {path} not in tree")
+        try:
+            target = parsing.parse_location(path, args)
+        except ValueError as ve:
+            if str(ve) != "Unsupported scheme ''":
+                raise
+            if not path.startswith("/"):
+                print("WARNING: relative path used, this is discouraged!")
+            target = os.path.join(tree, path.lstrip("/"))
+            if not in_tree(target, tree):
+                raise ValueError(f"path {path} not in tree") from None
 
         if parents:
             os.makedirs(target, mode=mode, exist_ok=exist_ok)
@@ -33,5 +40,5 @@ def main(tree, options):
 
 
 if __name__ == "__main__":
-    args = osbuild.api.arguments()
-    sys.exit(main(args["tree"], args["options"]))
+    _args = osbuild.api.arguments()
+    sys.exit(main(_args, _args["options"]))
