@@ -33,9 +33,28 @@
         }
       ],
       "properties": {
+        "targets": {
+          "description": "Array of  target paths to operate on",
+          "type": "array",
+          "additionalItems": false,
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Target path, if a mount",
+                "pattern": "^mount://[^/]+/"
+              },
+              {
+                "type": "string",
+                "description": "Target path, if a tree",
+                "pattern": "^tree://[^/]+/"
+              }
+            ]
+          }
+        },
         "file_contexts": {
-          "type": "string",
-          "description": "Path to the active SELinux policy's `file_contexts`"
+          "description": "Path to the active SELinux policy's `file_contexts`",
+          "type": "string"
         },
         "exclude_paths": {
           "type": "array",
