@@ -54,7 +54,23 @@
         },
         "file_contexts": {
           "description": "Path to the active SELinux policy's `file_contexts`",
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^mount://[^/]+/"
+            },
+            {
+              "type": "string",
+              "pattern": "^tree:///"
+            },
+            {
+              "type": "string",
+              "pattern": "^input://[^/]+/"
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "exclude_paths": {
           "type": "array",

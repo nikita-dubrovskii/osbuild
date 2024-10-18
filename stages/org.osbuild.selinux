@@ -20,7 +20,12 @@ def main(args, options):
         target = target.lstrip("/")
 
         if file_contexts:
-            file_contexts = os.path.join(f"{tree}", options["file_contexts"])
+            try:
+                file_contexts = parsing.parse_location(options["file_contexts"], args)
+            except ValueError as ve:
+                if str(ve) != "Unsupported scheme ''":
+                    raise
+                file_contexts = os.path.join(f"{tree}", options["file_contexts"])
             if exclude_paths:
                 exclude_paths = [os.path.join(root, target, p.lstrip("/")) for p in exclude_paths]
             selinux.setfiles(file_contexts, os.fspath(root), target, exclude_paths=exclude_paths)

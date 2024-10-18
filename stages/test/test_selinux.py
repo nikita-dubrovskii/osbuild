@@ -32,7 +32,7 @@ def get_test_input(test_data, file_contexts=False, labels=False):
     ({"force_autorelabel": True}, ""),
     ({"exclude_paths": ["/sysroot"]}, ""),
     # bad
-    ({"file_contexts": 1234}, "1234 is not of type 'string'"),
+    ({"file_contexts": 1234}, "1234 is not valid under any of the given schemas"),
     ({"labels": "xxx"}, "'xxx' is not of type 'object'"),
     ({"force_autorelabel": "foo"}, "'foo' is not of type 'boolean'"),
 ])
@@ -95,7 +95,7 @@ def test_selinux_file_contexts_mounts(mocked_setfiles, tmp_path, stage_module):
         cm.callback(subprocess.run, ["umount", fake_disk_mnt], check=True)
 
         options = {
-            "file_contexts": "etc/selinux/thing",
+            "file_contexts": "tree:///etc/selinux/thing",
             "targets": ["mount://root/"]
         }
         args = {
