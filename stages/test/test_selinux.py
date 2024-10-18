@@ -31,10 +31,14 @@ def get_test_input(test_data, file_contexts=False, labels=False):
     ({"labels": {"/usr/bin/cp": "system_u:object_r:install_exec_t:s0"}}, ""),
     ({"force_autorelabel": True}, ""),
     ({"exclude_paths": ["/sysroot"]}, ""),
+    ({"file_contexts": "path/to/file_contexts"}, ""),
+    ({"file_contexts": "tree:///path/to/file_contexts"}, ""),
+    ({"file_contexts": "mount://disk/path/to/file_contexts"}, ""),
+    ({"file_contexts": "input://tree/path/to/file_contexts"}, ""),
     ({"targets": ["mount:///boot/efi", "tree:///boot/efi"]}, ""),
     # bad
     ({"targets": ["/boot/efi"]}, "'/boot/efi' is not valid under any of the given schemas"),
-    ({"file_contexts": 1234}, "1234 is not of type 'string'"),
+    ({"file_contexts": 1234}, "1234 is not valid under any of the given schemas"),
     ({"labels": "xxx"}, "'xxx' is not of type 'object'"),
     ({"force_autorelabel": "foo"}, "'foo' is not of type 'boolean'"),
 ])
@@ -67,7 +71,7 @@ def test_selinux_file_contexts(mocked_setfiles, tmp_path, stage_module):
         "tree": f"{tmp_path}",
         "options": options
     }
-    stage_module.main(args, options)
+    stage_module.main(args)
 
     assert len(mocked_setfiles.call_args_list) == 1
     args, kwargs = mocked_setfiles.call_args_list[0]
@@ -97,7 +101,7 @@ def test_selinux_file_contexts_mounts(mocked_setfiles, tmp_path, stage_module):
         cm.callback(subprocess.run, ["umount", fake_disk_mnt], check=True)
 
         options = {
-            "file_contexts": "etc/selinux/thing",
+            "file_contexts": "tree:///etc/selinux/thing",
             "targets": ["mount://root/"]
         }
         args = {
@@ -108,7 +112,7 @@ def test_selinux_file_contexts_mounts(mocked_setfiles, tmp_path, stage_module):
             },
             "mounts": {"root": {"path": fake_disk_mnt}}
         }
-        stage_module.main(args, options)
+        stage_module.main(args)
 
         assert len(mocked_setfiles.call_args_list) == 1
         args, kwargs = mocked_setfiles.call_args_list[0]
@@ -126,7 +130,7 @@ def test_selinux_file_contexts_exclude(mocked_setfiles, tmp_path, stage_module):
         "tree": f"{tmp_path}",
         "options": options
     }
-    stage_module.main(args, options)
+    stage_module.main(args)
 
     assert len(mocked_setfiles.call_args_list) == 1
     args, kwargs = mocked_setfiles.call_args_list[0]
@@ -151,7 +155,7 @@ def test_selinux_labels(mocked_setfiles, mocked_setfilecon, tmp_path, stage_modu
         "tree": f"{tmp_path}",
         "options": options
     }
-    stage_module.main(args, options)
+    stage_module.main(args)
 
     assert len(mocked_setfiles.call_args_list) == 1
     assert len(mocked_setfilecon.call_args_list) == 1
@@ -171,7 +175,7 @@ def test_selinux_force_autorelabel(mocked_setfiles, tmp_path, stage_module):  # 
             "tree": f"{tmp_path}",
             "options": options
         }
-        stage_module.main(args, options)
+        stage_module.main(args)
 
         assert (tmp_path / ".autorelabel").exists() == enable_autorelabel
         if enable_autorelabel:
